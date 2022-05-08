@@ -3,6 +3,9 @@ server:
 spring:
   application:
     name: reggie_take_out
+  cache:
+    redis:
+      time-to-live: 1800000
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
