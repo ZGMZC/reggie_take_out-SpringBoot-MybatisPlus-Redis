@@ -42,6 +42,13 @@ public class CommonController {
         file.transferTo(new File(basePath+fileName));
         return R.success(fileName);
     }
+
+    /**
+     * 文件下载
+     * @param name
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("download")
     public void download(String name, HttpServletResponse response) throws IOException {
         //输入流 读取文件内容

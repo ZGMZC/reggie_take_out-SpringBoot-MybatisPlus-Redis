@@ -1,4 +1,4 @@
-package com.process2.reggie.common;
+package com.process2.reggie.utils;
 
 import java.util.Random;
 

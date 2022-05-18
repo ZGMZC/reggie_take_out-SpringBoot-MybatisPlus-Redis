@@ -2,7 +2,7 @@ package com.process2.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.process2.reggie.common.R;
-import com.process2.reggie.common.ValidateCodeUtils;
+import com.process2.reggie.utils.ValidateCodeUtils;
 import com.process2.reggie.entity.User;
 import com.process2.reggie.service.UserService;
 import com.process2.reggie.utils.SMSUtils;
@@ -54,6 +54,13 @@ public class UserController {
         }
         return R.error("短信发送失败");
     }
+
+    /**
+     * 用户登录
+     * @param map
+     * @param session
+     * @return
+     */
     @PostMapping("login")
     public R<User> login(@RequestBody Map map, HttpSession session){
         //获取手机号
