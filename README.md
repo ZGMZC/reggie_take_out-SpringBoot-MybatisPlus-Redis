@@ -13,10 +13,16 @@
 
 #### 项目亮点
 
-- 设计思路：
 - 亮点技术：Redis缓存、Git托管代码、Nginx部署静态资源并反向代理、MySQL事务、SpringBoot和MyBatisPlus使用、阿里云短信服务
 
-#### 做该项目的收获
+#### 项目收获
+
+- SpringBoot与Mybatisplus的使用
+- Servlet中的过滤器Filter
+- Redis使用
+- Nginx使用
+- 阿里云短信服务
+- MySQL主从复制
 
 #### 创建数据库
 
@@ -88,33 +94,41 @@
 
 ```yaml
 server:
+  #访问端口
   port: 8080
 spring:
   application:
-  # 应用名称
-    name: reggie_take_out  
+    #应用名称
+    name: reggie_take_out
   cache:
     redis:
+      #SpringCache中redis生存时间
       time-to-live: 1800000
   datasource:
     druid:
+      #数据库配置
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://127.0.0.1:3306/reggie?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: guaiying1002
   redis:
+    #redis数据库配置
     host: 127.0.0.1
     port: 6379
     password: guaiying1002
     database: 0
 mybatis-plus:
   configuration:
-    # 在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
+    #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
     map-underscore-to-camel-case: true
+    #log-impl指定的值为org.apache.ibatis.logging.Log接口的某个实现类,是设置打印mybatis的日志实现
+    #如果配置为org.apache.ibatis.logging.stdout.StdOutImpl就只会在控制台窗口打印，不会记录到日志文件。
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
+      #主键策略  雪花算法
       id-type: ASSIGN_ID
+# 文件存储地址
 reggie:
   path: F:\Code\Temp\
 ```
@@ -131,11 +145,19 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@Slf4j   //日志文件
-@SpringBootApplication  //SpringBootApplication启动类
+@Slf4j  //日志文件
+@SpringBootApplication  //快捷配置启动类
+
+/*1、Servlet 三大组件 Servlet、Filter、Listener 在传统项目中需要在 web.xml 中进行相应的配置。
+Servlet 3.0 开始在 javax.servlet.annotation 包下提供 3 个对应的 @WebServlet、@WebFilter、@WebListener 注解来简化操作。
+2、@WebServlet、@WebFilter、@WebListener 写在对应的 Servlet、Filter、Listener 类上作为标识，
+从而不需要在 web.xml 中进行配置了。
+3、Spring Boot 应用中这三个注解默认是不被扫描的，需要在项目启动类上
+添加 @ServletComponentScan 注解, 表示对 Servlet 组件扫描。
+*/
 @ServletComponentScan
-@EnableTransactionManagement
-@EnableCaching
+@EnableTransactionManagement    //开启事务支持
+@EnableCaching //@EnableCaching注解是spring framework中的注解驱动的缓存管理功能
 public class ReggieApplication {
     public static void main(String[] args) {
         SpringApplication.run(ReggieApplication.class,args);
@@ -147,10 +169,59 @@ public class ReggieApplication {
 - 导入静态资源
 
 > 1. 在resources文件夹下，创建static或template文件夹，在static中放置静态资源
->
-> 2. 可以创建 WebMvcConfig配置类
->
+>2. 可以创建 WebMvcConfig配置类
 > 3. 在配置文件中设置静态资源文件位置
+
+```java
+package com.process2.reggie.config;
+
+import com.process2.reggie.common.JacksonObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+
+import java.util.List;
+
+@Slf4j  //日志
+/*@Configuration的作用：标注在类上，配置spring容器(应用上下文)。相当于把该类作为spring的xml配置文件中的<beans>。
+@Configuration注解的类中，使用@Bean注解标注的方法，返回的类型都会直接注册为bean。*/
+@Configuration
+public class WebMvcConfig extends WebMvcConfigurationSupport {
+
+    /**
+     * 静态资源映射
+     * @param registry
+     */
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/backend/**").addResourceLocations("classpath:/static/backend/");
+        registry.addResourceHandler("/front/**").addResourceLocations("classpath:/static/front/");
+    }
+
+    /**
+     * 扩展MVC框架的消息转换器
+     *    所谓消息转换器，通俗来说将晦涩的消息转换成通俗易懂的消息。
+     * 　　对于java来说，通俗易懂的消息肯定是对象了。
+     * 　　对于请求和响应都有对应的body，这个body就是我们关注的消息。
+     * @param converters
+     */
+    @Override
+    protected void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        //创建消息转换器对象
+        MappingJackson2HttpMessageConverter messageConverter=new MappingJackson2HttpMessageConverter();
+        //设置对象转换器
+        messageConverter.setObjectMapper(new JacksonObjectMapper());
+        //将上面的消息转换器追加到mvc框架的转换器集合中
+        converters.add(0,messageConverter);
+    }
+}
+
+```
+
+
 
 ### 通用类相关
 
@@ -165,6 +236,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/*Serializable接口是启用其序列化功能的接口。
+实现java.io.Serializable 接口的类是可序列化的。没有实现此接口的类将不能使它们的任意状态被序列化或逆序列化
+所以在java中要实现对象IO读写操作的都必须实现Serializable接口，否则代码报错。
+凡是离开内存的信息都要进行序列化*/
 @Data
 public class R<T> implements Serializable {
     private Integer code; //编码：1成功，0和其它数字为失败
@@ -215,6 +290,13 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 @Slf4j
+/*@WebFilter注解将一个实现了javax.servlet.Filter接口的类定义为过滤器，
+这样我们在web应用中使用过滤器时，也不再需要在web.xml文件中配置过滤器的相关描述信息了
+filterName  指定过滤器的 name 属性，等价于 <filter-name>
+value  该属性等价于 urlPatterns 属性。但是两者不应该同时使用。
+urlPatterns  指定一组过滤器的 URL 匹配模式。等价于 <url-pattern> 标签。
+servletNames  指定过滤器将应用于哪些 Servlet。取值是 @WebServlet 中的 name 属性的取值，或者是 web.xml中<servlet-name> 的取值。
+*/
 @WebFilter(filterName = "loginCheckFilter",urlPatterns = "/*")
 public class LoginCheckFilter implements Filter {
     //路径匹配器 支持通配符
@@ -224,7 +306,6 @@ public class LoginCheckFilter implements Filter {
         HttpServletRequest request=(HttpServletRequest)  servletRequest;
         HttpServletResponse response=(HttpServletResponse) servletResponse;
         String requestURI = request.getRequestURI();
-
         //不需要处理的请求
         String[] urls=new String[]{
                 "/employee/login",
@@ -236,29 +317,31 @@ public class LoginCheckFilter implements Filter {
                 "/user/login"
         };
         boolean check = check(urls, requestURI);
-        //如果检查成功，则放行
         if(check==true){
             filterChain.doFilter(request,response);
             return;
         }
-        //检查失败后，查看是否登录
         if(request.getSession().getAttribute("employee")!=null){
             Long empId=(Long) request.getSession().getAttribute("employee");
+            // 设置当前线程id
             BaseContext.setCurrentId(empId);
             filterChain.doFilter(request,response);
             return;
         }
         if(request.getSession().getAttribute("user")!=null){
             Long userId=(Long) request.getSession().getAttribute("user");
+            // 设置当前线程id
             BaseContext.setCurrentId(userId);
             filterChain.doFilter(request,response);
             return;
         }
-		//未登录，则提示未登录信息
+        //匹配失败
+        //response.getWriter().writer（）,只能打印输出文本格式的（包括html标签），不可以打印对象
+        //JSON.toJSONString则是将对象转化为Json字符串。在前后台的传输过程中，Json字符串是相当常用的
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));
         return;
     }
-		//将白名单的地址与请求地址进行匹配
+
     public boolean check(String[] urls,String requestURI){
         for(String url:urls){
             boolean match = PATH_MATCHER.match(url, requestURI);
@@ -269,6 +352,28 @@ public class LoginCheckFilter implements Filter {
 }
 
 ```
+```java
+package com.process2.reggie.common;
+
+/**
+ * 基于ThreadLocal封装工具类
+ */
+public class BaseContext {
+    private static ThreadLocal<Long> threadLocal=new ThreadLocal<>();
+    //设置当前线程id
+    public static void setCurrentId(Long id){
+        threadLocal.set(id);
+    }
+    //获取当前线程id
+    public static Long getCurrentId(){
+        return threadLocal.get();
+    }
+}
+
+```
+
+
+
 #### 全局异常处理
 
 ```java
@@ -286,19 +391,30 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
  * 全局异常处理
+ * @ControllerAdvice 学名是Controller增强器，作用是给Controller控制器添加统一的操作或处理。
+ *
+ * 1.结合方法型注解@ExceptionHandler，用于捕获Controller中抛出的指定类型的异常，从而达到不同类型的异常区别处理的目的。
+ *
+ * 2.结合方法型注解@InitBinder，用于request中自定义参数解析方式进行注册，从而达到自定义指定格式参数的目的。
+ *
+ * 3.结合方法型注解@ModelAttribute，表示其注解的方法将会在目标Controller方法执行之前执行。
  */
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
+/*如果返回值是字符串，那么直接将字符串写到客户端；如果是一个对象，会将对象转化为json串，然后写到客户端
+* 将方法的返回值，以特定的格式写入到response的body区域，进而将数据返回给客户端
+* */
 @ResponseBody
 @Slf4j
 public class GlobalExceptionHandler {
     /**
-     * 异常 处理方法
-     * @param ex
+     * 异常处理方法
+     * @param ex SQl注入异常
      * @return
      */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public R<String> exceptionHandler(SQLIntegrityConstraintViolationException ex){
         log.error(ex.getMessage());
+
         if(ex.getMessage().contains("Duplicate entry")){
             String[] s = ex.getMessage().split(" ");
             String msg=s[2]+"已存在";
@@ -308,8 +424,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 异常 处理方法
-     * @param ex
+     * 异常处理方法
+     * @param ex 自定义业务异常类
      * @return
      */
     @ExceptionHandler(CustomException.class)
@@ -320,14 +436,6 @@ public class GlobalExceptionHandler {
 }
 
 ```
-
-> @ControllerAdvice注解是Spring3.2中新增的注解，学名是Controller增强器，作用是给Controller控制器添加统一的操作或处理。
->
-> 1.结合方法型注解@ExceptionHandler，用于捕获Controller中抛出的指定类型的异常，从而达到不同类型的异常区别处理的目的。
->
-> 2.结合方法型注解@InitBinder，用于request中自定义参数解析方式进行注册，从而达到自定义指定格式参数的目的。
->
-> 3.结合方法型注解@ModelAttribute，表示其注解的方法将会在目标Controller方法执行之前执行。
 
 #### 自定义业务异常类
 
@@ -340,6 +448,33 @@ package com.process2.reggie.common;
 public class CustomException extends RuntimeException{
     public CustomException(String message){
         super(message);
+    }
+}
+
+```
+
+#### MybatisPlus分页插件配置
+
+```java
+package com.process2.reggie.config;
+
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * mp的分页插件
+ */
+@Configuration
+public class MybatisPlusConfig {
+
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor(){
+        //MybatisPlus 分页插件
+        MybatisPlusInterceptor mybatisPlusInterceptor=new MybatisPlusInterceptor();
+        mybatisPlusInterceptor.addInnerInterceptor(new PaginationInnerInterceptor());
+        return mybatisPlusInterceptor;
     }
 }
 
@@ -380,8 +515,14 @@ import java.time.LocalDateTime;
 /**
  * 自定义元数据对象处理器
  */
-@Component
+@Component  //标注Spring管理的Bean，使用@Component注解在一个类上，表示将此类标记为Spring容器中的一个Bean。
 @Slf4j
+/*
+* MetaObjectHandler接口是mybatisPlus为我们提供的的一个扩展接口，
+* 我们可以利用这个接口在我们插入或者更新数据的时候，为一些字段指定默认值。
+* 实现这个需求的方法不止一种，在sql层面也可以做到，在建表的时候也可以指定默认值。
+* 通常与@TableField注解配合使用
+* */
 public class MyMetaObjectHandler implements MetaObjectHandler {
     /**
      * 插入操作自动填充
@@ -405,12 +546,9 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         metaObject.setValue("updateUser", BaseContext.getCurrentId());
     }
 }
-
 ```
 
 #### 文件上传和下载
-
-##### 前端接口
 
 ##### 控制层
 ```java
@@ -437,9 +575,23 @@ import java.util.UUID;
 /**
  * 文件上传和下载
  */
+/*@RestController 是 Spring4 后新加的注解，从 RestController 类源码可以看出
+@RestController 是 @Controller 和 @ResponseBody 两个注解的结合体。
+* */
 @RestController
+/* 映射URL
+* 类定义处：规定初步的请求映射，相对于web应用的根目录；
+* 方法定义处：进一步细分请求映射，相对于类定义处的URL。如果类定义处没有使用该注解，则方法标记的URL相对于根目录而言；
+*/
 @RequestMapping("common")
 public class CommonController {
+    /*通过@Value将外部的值动态注入到Bean中，使用的情况有：
+        注入普通字符串
+        注入操作系统属性
+        注入表达式结果
+        注入其他Bean属性：注入beanInject对象的属性another
+        注入文件资源
+        注入URL资源*/
     @Value("${reggie.path}")
     private String basePath;
 
@@ -452,18 +604,27 @@ public class CommonController {
     public R<String> upload(MultipartFile file) throws IOException {
         //原始文件名
         String originalFilename = file.getOriginalFilename();
+        //获取文件的后缀
         String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));
         //使用UUID重新生成文件名
         String fileName= UUID.randomUUID().toString()+suffix;
+        //保存图片
         file.transferTo(new File(basePath+fileName));
         return R.success(fileName);
     }
+
+    /**
+     * 文件下载
+     * @param name
+     * @param response
+     * @throws IOException
+     */
     @GetMapping("download")
     public void download(String name, HttpServletResponse response) throws IOException {
-        //输入流 读取文件内容
+        //输入流 将文件写入内存
         FileInputStream fileInputStream=new FileInputStream(new File(basePath+name));
 
-        //输出流
+        //输出流 将文件从内存写到网页上
         ServletOutputStream outputStream = response.getOutputStream();
         response.setContentType("image/jpeg");
         int len=0;
@@ -475,9 +636,7 @@ public class CommonController {
         outputStream.close();
         fileInputStream.close();
     }
-
 }
-
 ```
 ### 后台登录相关
 #### 员工实体类Employee
@@ -607,6 +766,10 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/login")
+     /*@RequestBody
+    * 主要用来接收前端传递给后端的json字符串中的数据的(请求体中的数据的)
+    * GET方式无请求体，所以使用@RequestBody接收数据时，前端不能使用GET方式提交数据，而是用POST方式进行提交。
+    * */
     public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
         //1. 将页面提交的密码password进行md5加密处理
         String password = employee.getPassword();
@@ -626,7 +789,6 @@ public class EmployeeController {
         return R.success(emp);
     }
 }
-
 ```
 
 #### 后台退出功能
@@ -646,7 +808,6 @@ Method:post
         request.getSession().removeAttribute("employee");
         return R.success("退出成功");
     }
-
 ```
 
 ### 员工相关功能
@@ -1147,26 +1308,6 @@ public class Dish implements Serializable {
 }
 ```
 ```java
-package com.process2.reggie.dto;
-
-import com.process2.reggie.entity.Dish;
-import com.process2.reggie.entity.DishFlavor;
-import lombok.Data;
-import java.util.ArrayList;
-import java.util.List;
-
-@Data
-public class DishDto extends Dish {
-
-    private List<DishFlavor> flavors = new ArrayList<>();
-
-    private String categoryName;
-
-    private Integer copies;
-}
-
-```
-```java
 package com.process2.reggie.entity;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
@@ -1223,7 +1364,34 @@ public class DishFlavor implements Serializable {
 
 
 ```
+```java
+package com.process2.reggie.dto;
+
+import com.process2.reggie.entity.Dish;
+import com.process2.reggie.entity.DishFlavor;
+import lombok.Data;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 菜品口味和菜品  关联类
+ */
+@Data
+public class DishDto extends Dish {
+
+    private List<DishFlavor> flavors = new ArrayList<>();
+
+    private String categoryName;
+
+    private Integer copies;
+}
+
+```
+
+
+
 ##### 接口层
+
 ```java
 package com.process2.reggie.mapper;
 
@@ -1362,8 +1530,6 @@ public class DishController {
 ```
 #### 菜品信息分页查询
 
-##### 前端接口
-
 ##### 控制层
 ```java
     /**
@@ -1384,6 +1550,7 @@ public class DishController {
         queryWrapper.like(name!=null,Dish::getName,name);
         //添加排序
         queryWrapper.orderByDesc(Dish::getUpdateTime);
+        dishService.page(pageInfo,queryWrapper);
         //对象拷贝
         BeanUtils.copyProperties(pageInfo,dishDtoPage,"records");
         List<Dish> records = pageInfo.getRecords();
@@ -1399,8 +1566,7 @@ public class DishController {
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
-        dishService.page(pageInfo,queryWrapper);
-        return R.success(pageInfo);
+        return R.success(dishDtoPage);
     }
 /**
      * 根据条件查询对应菜品
@@ -1461,8 +1627,6 @@ public class DishController {
 ```
 
 #### 修改菜品
-
-##### 前端接口
 
 ##### 服务层
 
@@ -1732,8 +1896,6 @@ public class SetmealDish implements Serializable {
 
 #### 新增套餐
 
-##### 前端接口
-
 ##### 接口层
 
 同上
@@ -1810,31 +1972,6 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
 
 ```
 
-```java
-package com.process2.reggie.service;
-
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.process2.reggie.entity.SetmealDish;
-
-public interface SetmealDishService extends IService<SetmealDish> {
-}
-
-```
-
-```java
-package com.process2.reggie.service.impl;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.process2.reggie.entity.SetmealDish;
-import com.process2.reggie.mapper.SetmealDishMapper;
-import com.process2.reggie.service.SetmealDishService;
-import org.springframework.stereotype.Service;
-
-@Service
-public class SetmealDishServiceImpl extends ServiceImpl<SetmealDishMapper, SetmealDish> implements SetmealDishService {
-}
-
-```
 ##### 控制层
 ```java
 package com.process2.reggie.controller;
@@ -1948,8 +2085,6 @@ public class SetmealController {
 ```
 
 #### 删除套餐
-
-##### 前端接口
 
 ##### 服务层
 
@@ -2281,8 +2416,6 @@ public class AddressBook implements Serializable {
 }
 ```
 
-##### 前端接口
-
 ##### 控制层
 ```java
 package com.process2.reggie.controller;
@@ -2381,9 +2514,7 @@ public class AddressBookController {
 ```
 #### 菜品展示
 
-##### 前端接口
-
-> 相关功能代码已实现
+> 相关查询功能代码已实现
 
 #### 购物车
 
@@ -2435,8 +2566,6 @@ public class ShoppingCart implements Serializable {
 }
 
 ```
-
-##### 前端接口
 
 ##### 控制层
 
@@ -2797,7 +2926,7 @@ public class OrderController {
 }
 ```
 ### Redis相关
-> 导入相关坐标：spring-boot-starter-data-redis
+> 导入相关坐标：spring-boot-starter-data-redis spring-boot-starter-cache
 > yml中配置 Redis数据库：spring.redis.host/port/password/database
 
 #### 缓存验证码
@@ -3013,4 +3142,4 @@ server{
 	}
 }
 
-``
+```

@@ -6,6 +6,9 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 菜品口味和菜品  关联类
+ */
 @Data
 public class DishDto extends Dish {
 

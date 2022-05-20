@@ -28,6 +28,10 @@ public class EmployeeController {
      * @return
      */
     @PostMapping("/login")
+    /*@RequestBody
+    * 主要用来接收前端传递给后端的json字符串中的数据的(请求体中的数据的)
+    * GET方式无请求体，所以使用@RequestBody接收数据时，前端不能使用GET方式提交数据，而是用POST方式进行提交。
+    * */
     public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
         //1. 将页面提交的密码password进行md5加密处理
         String password = employee.getPassword();
@@ -102,8 +106,8 @@ public class EmployeeController {
     @PutMapping
     public R<String> update(HttpServletRequest request,@RequestBody Employee employee){
         Long empId=(Long) request.getSession().getAttribute("employee");
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(empId);
+//        employee.setUpdateTime(LocalDateTime.now());
+//        employee.setUpdateUser(empId);
         employeeService.updateById(employee);
         return R.success("员工信息修改成功");
     }
@@ -114,6 +118,8 @@ public class EmployeeController {
      * @return
      */
     @GetMapping("/{id}")
+    /*@PathVariable是spring3.0的一个新功能：接收请求路径中占位符的值
+    * */
     public R<Employee> getById(@PathVariable Long id){
         Employee employee = employeeService.getById(id);
         if(employee!=null)

@@ -10,7 +10,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 
 import java.util.List;
 
-@Slf4j
+@Slf4j  //日志
+/*@Configuration的作用：标注在类上，配置spring容器(应用上下文)。相当于把该类作为spring的xml配置文件中的<beans>。
+@Configuration注解的类中，使用@Bean注解标注的方法，返回的类型都会直接注册为bean。*/
 @Configuration
 public class WebMvcConfig extends WebMvcConfigurationSupport {
 
@@ -26,6 +28,9 @@ public class WebMvcConfig extends WebMvcConfigurationSupport {
 
     /**
      * 扩展MVC框架的消息转换器
+     *    所谓消息转换器，通俗来说将晦涩的消息转换成通俗易懂的消息。
+     * 　　对于java来说，通俗易懂的消息肯定是对象了。
+     * 　　对于请求和响应都有对应的body，这个body就是我们关注的消息。
      * @param converters
      */
     @Override

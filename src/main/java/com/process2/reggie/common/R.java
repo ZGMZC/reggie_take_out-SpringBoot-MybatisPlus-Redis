@@ -6,6 +6,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+/*Serializable接口是启用其序列化功能的接口。
+实现java.io.Serializable 接口的类是可序列化的。没有实现此接口的类将不能使它们的任意状态被序列化或逆序列化
+所以在java中要实现对象IO读写操作的都必须实现Serializable接口，否则代码报错。
+凡是离开内存的信息都要进行序列化*/
 @Data
 public class R<T> implements Serializable {
     private Integer code; //编码：1成功，0和其它数字为失败

@@ -12,14 +12,24 @@ import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
  * 全局异常处理
+ * @ControllerAdvice 学名是Controller增强器，作用是给Controller控制器添加统一的操作或处理。
+ *
+ * 1.结合方法型注解@ExceptionHandler，用于捕获Controller中抛出的指定类型的异常，从而达到不同类型的异常区别处理的目的。
+ *
+ * 2.结合方法型注解@InitBinder，用于request中自定义参数解析方式进行注册，从而达到自定义指定格式参数的目的。
+ *
+ * 3.结合方法型注解@ModelAttribute，表示其注解的方法将会在目标Controller方法执行之前执行。
  */
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
+/*如果返回值是字符串，那么直接将字符串写到客户端；如果是一个对象，会将对象转化为json串，然后写到客户端
+* 将方法的返回值，以特定的格式写入到response的body区域，进而将数据返回给客户端
+* */
 @ResponseBody
 @Slf4j
 public class GlobalExceptionHandler {
     /**
-     * 异常 处理方法
-     * @param ex
+     * 异常处理方法
+     * @param ex SQl注入异常
      * @return
      */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
@@ -35,8 +45,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 异常 处理方法
-     * @param ex
+     * 异常处理方法
+     * @param ex 自定义业务异常类
      * @return
      */
     @ExceptionHandler(CustomException.class)

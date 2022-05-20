@@ -56,6 +56,7 @@ public class CategoryController {
      * @return
      */
     @DeleteMapping
+    /*@RequestParam用于将请求参数区数据映射到功能处理方法的参数上。*/
     public R<String> delete(@RequestParam  Long id){
 //        categoryService.removeById(id);
         categoryService.remove(id);
@@ -87,6 +88,7 @@ public class CategoryController {
         //排序条件
         queryWrapper.orderByAsc(Category::getSort).orderByDesc(Category::getUpdateTime);
         List<Category> list=categoryService.list(queryWrapper);
+
         return R.success(list);
     }
 

@@ -72,9 +72,11 @@ public class DishController {
         queryWrapper.like(name!=null,Dish::getName,name);
         //添加排序
         queryWrapper.orderByDesc(Dish::getUpdateTime);
+        dishService.page(pageInfo,queryWrapper);
         //对象拷贝
         BeanUtils.copyProperties(pageInfo,dishDtoPage,"records");
         List<Dish> records = pageInfo.getRecords();
+        //将  id转化成name再返回
         List<DishDto> list=records.stream().map((item)->{
             DishDto dishDto=new DishDto();
             BeanUtils.copyProperties(item,dishDto);
@@ -87,8 +89,7 @@ public class DishController {
             return dishDto;
         }).collect(Collectors.toList());
         dishDtoPage.setRecords(list);
-        dishService.page(pageInfo,queryWrapper);
-        return R.success(pageInfo);
+        return R.success(dishDtoPage);
     }
 
     /**
