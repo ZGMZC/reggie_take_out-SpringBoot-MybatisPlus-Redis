@@ -73,17 +73,29 @@
 项目依赖
 
 > spring-boot-starter
+> 
 > spring-boot-starter-test
+> 
 > spring-boot-starter-web
+> 
 > mybatis-plus-boot-starter
+> 
 > lombok
+> 
 > fastjson
+> 
 > commons-lang
+> 
 > mysql-connector-java
+> 
 > druid-spring-boot-starter
+> 
 > aliyun-java-sdk-core
+> 
 > aliyun-java-sdk-dysmsapi
+> 
 > spring-boot-starter-data-redis
+> 
 > spring-boot-starter-cache
 
 插件
