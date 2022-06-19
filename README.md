@@ -5,8 +5,8 @@
 #### 项目分析
 
 - SpringBoot-2.4.5
-- 移动端前台：手机号登录（阿里云服务_短信验证码）、菜品浏览、下单、地址管理、菜品规格、购物车、历史订单
-	 -  客户端用户：登录移动端应用，可以浏览菜品、添加购物车、设置地址、下单等
+- 移动端前台：手机号登录（阿里云服务--短信验证码）、菜品浏览、下单、地址管理、菜品规格、购物车、历史订单
+	-  客户端用户：登录移动端应用，可以浏览菜品、添加购物车、设置地址、下单等
 - 系统管理后台：员工登录、员工退出、员工管理、分类管理、菜品管理、套餐管理、菜品口味管理、订单管理
 	- 后台系统管理员：登录后台管理系统，拥有后台系统中的所有操作权限
 	- 后台系统普通用户：登录后台管理系统，对菜品、套餐、订单等进行管理
@@ -23,6 +23,7 @@
 - Nginx使用
 - 阿里云短信服务
 - MySQL主从复制
+- 部署JavaWeb项目
 
 #### 创建数据库
 
@@ -47,7 +48,7 @@
 1. 创建Maven项目，配置编码、JDK等
 2. 导入坐标
 
-  - 继承Springboot父工程
+- 继承Springboot父工程
 
 ```xml
 <parent>
@@ -73,29 +74,17 @@
 项目依赖
 
 > spring-boot-starter
-> 
 > spring-boot-starter-test
-> 
 > spring-boot-starter-web
-> 
 > mybatis-plus-boot-starter
-> 
 > lombok
-> 
 > fastjson
-> 
 > commons-lang
-> 
 > mysql-connector-java
-> 
 > druid-spring-boot-starter
-> 
 > aliyun-java-sdk-core
-> 
 > aliyun-java-sdk-dysmsapi
-> 
 > spring-boot-starter-data-redis
-> 
 > spring-boot-starter-cache
 
 插件
@@ -609,6 +598,7 @@ public class CommonController {
 
     /**
      * 文件上传
+     * 将用户上传到服务器的头像 存起来（MultipartFile file 只是暂存）
      * @param file
      * @return
      */
@@ -627,6 +617,7 @@ public class CommonController {
 
     /**
      * 文件下载
+     * 将服务器上的头像，下载，直接在浏览器中打开文件
      * @param name
      * @param response
      * @throws IOException
@@ -953,7 +944,7 @@ Param:user
         Employee employee = employeeService.getById(id);
         if(employee!=null)
         return R.success(employee);
-        return R.error("未查询到员工 信息");
+        return R.error("未查询到员工信息");
     }
 ```
 
@@ -3149,9 +3140,20 @@ server{
 ```xml
 server{
 	location ^~ /api/{
-	rewrite ^/api/(.*)$ /$1 break;//正则表达式 访问到路径，例： 		http://192.168.226.129:8080/api/employee/login
+	rewrite ^/api/(.*)$ /$1 break;//正则表达式 访问到路径，例： http://192.168.226.129:8080/api/employee/login
 	proxy_pass http://192.168.226.129:8080;
 	}
 }
 
 ```
+### 项目部署
+部署项目时，可以选择SpringBoot内置的Tomcat，也可以直接部署到Tomcat服务器中的webapps路径下，启动Tomcat(需要修改配置文件、启动类等)
+#### 前端部署
+- 安装Nginx
+- 修改Nginx配置文件nginx.conf
+
+#### 后端部署
+- 在服务器中安装jdk、git、maven、MySQL，使用 git 将远程仓库的代码拉取下来
+- Maven打包项目：mvn clean package -Dmaven.test.skip=true
+- 启动项目：java -jar XXXX.jar
+
